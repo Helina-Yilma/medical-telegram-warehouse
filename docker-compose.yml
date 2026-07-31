@@ -1,0 +1,37 @@
+# version: "3.9"  # Docker Compose file format version
+
+services:
+  # -------------------------------
+  # Postgres Database Service
+  # -------------------------------
+  postgres:
+    image: postgres:15  # Official Postgres 15 image
+    container_name: postgres  # Name of the container for easy reference
+    env_file: .env  # Load environment variables (DB credentials, etc.)
+    ports:
+      - "5432:5432"  # Map container port 5432 → host port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persist database data on host
+      - ./init:/docker-entrypoint-initdb.d     # Run SQL scripts at first container startup
+      - ./data:/data                           # Mount CSV files for COPY commands
+
+  # -------------------------------
+  # dbt Transformation Service
+  # -------------------------------
+  dbt:
+    build: .  # Build dbt Dockerfile in current directory
+    container_name: dbt  # Name of the dbt container
+    env_file: .env  # Load environment variables for dbt (profiles, connection)
+    depends_on:
+      - postgres  # Ensure Postgres is ready before dbt runs
+    ports:
+      - "8081:8080"  # Map host port 8081 to container port 8080
+    volumes:
+      - .:/usr/app  # Mount the entire project directory into container
+    command: tail -f /dev/null # Keep the container running
+
+# -------------------------------
+# Docker Volumes
+# -------------------------------
+volumes:
+  postgres_data:  # Named volume to persist Postgres data across container restarts
