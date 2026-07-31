@@ -1,0 +1,4 @@
+[core]
+    remote = myremote
+['remote "myremote"']
+    url = C:/Users/amare/Documents/KAIM/week-8/dvc_storage

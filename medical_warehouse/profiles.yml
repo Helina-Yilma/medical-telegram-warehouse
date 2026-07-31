@@ -1,0 +1,36 @@
+# profiles.yml
+# Defines connection details for dbt to connect to your warehouse
+
+# Profile name used by dbt (must match the profile name in dbt_project.yml)
+medical_warehouse:
+
+  # Default target environment dbt will use
+  target: dev
+
+  # List of output environments for this profile
+  outputs:
+    # Development environment configuration
+    dev:
+      type: postgres                         # Database type (PostgreSQL)
+
+      # Hostname of the Postgres server (default: "postgres" for Docker)
+      host: "{{ env_var('DATABASE_HOST', 'postgres') }}"
+
+      # Username used to authenticate with Postgres
+      user: "{{ env_var('DATABASE_USER') }}"
+
+      # Password for the Postgres user
+      password: "{{ env_var('DATABASE_PASSWORD') }}"
+
+      # Port number for Postgres (default 5432, cast to integer)
+      port: "{{ env_var('DATABASE_PORT', 5432) | int }}"
+
+      # Database name to connect to
+      dbname: "{{ env_var('DATABASE_NAME') }}"
+
+      # Schema where dbt will create models
+      schema: analytics
+
+      # Number of concurrent threads dbt can use
+      threads: 4
+

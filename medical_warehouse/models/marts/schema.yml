@@ -1,0 +1,110 @@
+version: 2
+
+models:
+  - name: dim_channels
+    description: "Dimension table containing metadata for Telegram channels. Used to categorize messages by channel name and industry type."
+    columns:
+      - name: channel_key
+        description: "Primary Key: MD5 hash of the cleaned channel name."
+        tests:
+          - unique
+          - not_null
+      - name: channel_name
+        description: "The original name of the Telegram channel."
+        tests:
+          - not_null
+      - name: channel_type
+        description: "Industry classification (Pharmaceutical, Cosmetics, or Medical)."
+        tests:
+          - not_null
+      - name: first_post_date
+        description: "The date of the earliest message recorded for this channel."
+      - name: last_post_date
+        description: "The date of the most recent message recorded for this channel."
+      - name: total_posts
+        description: "The total number of messages sent by this channel."
+        tests:
+          - expression_is_true:
+              expression: "total_posts >= 0"
+      - name: avg_views
+        description: "The average number of views per post for this channel."
+        tests:
+          - expression_is_true:
+              expression: "avg_views >= 0"
+
+  - name: dim_dates
+    description: "Date dimension used for time-based analysis (filtering by year, month, or weekend status)."
+    columns:
+      - name: date_key
+        description: "Primary Key: Integer date in YYYYMMDD format (e.g., 20240520)."
+        tests:
+          - unique
+          - not_null
+      - name: full_date
+        description: "The actual date in date format."
+        tests:
+          - not_null
+      - name: day_of_week
+        description: "Numerical day of the week (1-7)."
+      - name: day_name
+        description: "Full name of the day (e.g., Monday)."
+      - name: week_of_year
+        description: "The ISO week number of the year."
+      - name: month
+        description: "Numerical month of the year (1-12)."
+      - name: month_name
+        description: "Full name of the month (e.g., May)."
+      - name: quarter
+        description: "Fiscal quarter (1-4)."
+      - name: year
+        description: "The four-digit year."
+      - name: is_weekend
+        description: "Boolean flag (True/False) indicating if the date is a Saturday or Sunday."
+
+  - name: fct_messages
+    description: "Fact table containing individual message records and engagement metrics. Each row represents one Telegram message."
+    columns:
+      - name: message_id
+        description: "Primary Key: The unique ID assigned to the message by Telegram."
+        tests:
+          - unique
+          - not_null
+      - name: channel_key
+        description: "Foreign Key linking to dim_channels."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_channels')
+              field: channel_key
+      - name: date_key
+        description: "Foreign Key linking to dim_dates."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_dates')
+              field: date_key
+      - name: message_text
+        description: "The raw text content of the message."
+        tests:
+          - not_null
+      - name: message_length
+        description: "The character count of the message text."
+        tests:
+          - expression_is_true:
+              expression: "message_length >= 0"
+      - name: view_count
+        description: "Total views the message has received."
+        tests:
+          - not_null
+          - expression_is_true:
+              expression: "view_count >= 0"
+      - name: forward_count
+        description: "Total number of times the message was shared/forwarded."
+        tests:
+          - not_null
+          - expression_is_true:
+              expression: "forward_count >= 0"
+      - name: has_image
+        description: "Boolean flag indicating if the message contained an image/media."
+        tests:
+          - not_null

@@ -1,0 +1,19 @@
+# Virtual environment
+.venv/
+
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+.env
+
+*.session
+
+data/raw/*
+!data/raw/.gitkeep
+!data/raw.dvc
+data/raw/.gitignore
+
+# ML model weights
+*.pt
